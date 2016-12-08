@@ -72,7 +72,7 @@ const char *vlr_sub_name(struct vlr_subscriber *vsub)
 {
 	static char buf[32];
 	if (!vsub)
-		return "-";
+		return "unknown";
 	if (vsub->imsi[0])
 		strncpy(buf, vsub->imsi, sizeof(buf));
 	else

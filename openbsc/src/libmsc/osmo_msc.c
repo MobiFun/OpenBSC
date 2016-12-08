@@ -184,7 +184,7 @@ void msc_release_connection(struct gsm_subscriber_connection *conn)
 
 	/* Let VLR know that a given subscriber is gone */
 	if (conn->subscr)
-		vlr_sub_disconnected(conn->subscr);
+		vlr_sub_disconnected(conn->subscr->vsub);
 
 	gsm0808_clear(conn);
 	/* TODO: is there anything to wait for? */

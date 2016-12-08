@@ -414,7 +414,7 @@ static int mm_rx_id_resp(struct gsm_subscriber_connection *conn, struct msgb *ms
 
 	osmo_signal_dispatch(SS_SUBSCR, S_SUBSCR_IDENTITY, gh->data);
 
-	return vlr_sub_rx_id_resp(conn->subscr, gh->data+1, gh->data[0]);
+	return vlr_sub_rx_id_resp(conn->subscr->vsub, gh->data+1, gh->data[0]);
 }
 
 /* FIXME: to libosmogsm */
@@ -911,14 +911,14 @@ static int gsm48_rx_mm_auth_resp(struct gsm_subscriber_connection *conn, struct 
 	DEBUGP(DMM, "MM AUTHENTICATION RESPONSE (sres = %s): ",
 		osmo_hexdump(ar->sres, 4));
 
-	return vlr_sub_rx_auth_resp(conn->subscr, is_r99, false, ar->sres, 4);
+	return vlr_sub_rx_auth_resp(conn->subscr->vsub, is_r99, false, ar->sres, 4);
 }
 
 static int gsm48_rx_mm_tmsi_reall_compl(struct gsm_subscriber_connection *conn)
 {
 	DEBUGP(DMM, "TMSI Reallocation Completed. Subscriber: %s\n",
-	       vlr_sub_name(conn->subscr));
-	return vlr_sub_rx_tmsi_reall_compl(conn->subscr);
+	       subscr_name(conn->subscr));
+	return vlr_sub_rx_tmsi_reall_compl(conn->subscr->vsub);
 }
 
 /* Receive a GSM 04.08 Mobility Management (MM) message */
@@ -3620,13 +3620,14 @@ static void msc_vlr_subscr_update(struct vlr_subscriber *subscr)
 
 /* VLR informs us that the subscriber has been associated with a conn */
 static void msc_vlr_subscr_assoc(void *msc_conn_ref,
-				 struct vlr_subscriber *subscr)
+				 struct vlr_subscriber *vsub)
 {
 	struct gsm_subscriber_connection *conn = msc_conn_ref;
 	DEBUGP(DVLR, "%s: msc_vlr_subscr_assoc(%p)\n",
-	       vlr_sub_name(subscr), conn);
-	OSMO_ASSERT(conn->lu_fsm == subscr->lu_fsm);
-	conn->subscr = subscr;
+	       vlr_sub_name(vsub), conn);
+	OSMO_ASSERT(conn->lu_fsm == vsub->lu_fsm);
+	OSMO_ASSERT(conn->subscr);
+	conn->subscr->vsub = vsub;
 }
 
 /* operations that we need to implement for libvlr */
