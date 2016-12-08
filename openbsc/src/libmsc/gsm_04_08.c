@@ -408,6 +408,12 @@ static int mm_rx_id_resp(struct gsm_subscriber_connection *conn, struct msgb *ms
 	uint8_t mi_type = gh->data[1] & GSM_MI_TYPE_MASK;
 	char mi_string[GSM48_MI_SIZE];
 
+	if (!(conn->subscr && conn->subscr->vsub)) {
+		LOGP(DMM, LOGL_ERROR,
+		     "Rx MM Identity Response: invalid: no subscriber\n");
+		return -EINVAL;
+	}
+
 	gsm48_mi_to_string(mi_string, sizeof(mi_string), &gh->data[1], gh->data[0]);
 	DEBUGP(DMM, "IDENTITY RESPONSE: MI(%s)=%s\n",
 		gsm48_mi_type_name(mi_type), mi_string);
@@ -911,6 +917,11 @@ static int gsm48_rx_mm_auth_resp(struct gsm_subscriber_connection *conn, struct 
 	DEBUGP(DMM, "MM AUTHENTICATION RESPONSE (sres = %s): ",
 		osmo_hexdump(ar->sres, 4));
 
+	if (!(conn->subscr && conn->subscr->vsub)) {
+		LOGP(DMM, LOGL_ERROR,
+		     "Rx MM Authentication Response: invalid: no subscriber\n");
+		return -EINVAL;
+	}
 	return vlr_sub_rx_auth_resp(conn->subscr->vsub, is_r99, false, ar->sres, 4);
 }
 
@@ -918,6 +929,11 @@ static int gsm48_rx_mm_tmsi_reall_compl(struct gsm_subscriber_connection *conn)
 {
 	DEBUGP(DMM, "TMSI Reallocation Completed. Subscriber: %s\n",
 	       subscr_name(conn->subscr));
+	if (!(conn->subscr && conn->subscr->vsub)) {
+		LOGP(DMM, LOGL_ERROR,
+		     "Rx MM TMSI Reallocation Complete: invalid: no subscriber\n");
+		return -EINVAL;
+	}
 	return vlr_sub_rx_tmsi_reall_compl(conn->subscr->vsub);
 }
 
