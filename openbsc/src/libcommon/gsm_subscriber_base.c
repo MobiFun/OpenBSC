@@ -30,6 +30,7 @@
 #include <osmocom/core/talloc.h>
 #include <openbsc/gsm_subscriber.h>
 #include <openbsc/debug.h>
+#include <openbsc/vlr.h>
 
 LLIST_HEAD(active_subscribers);
 void *tall_subscr_ctx;
@@ -40,12 +41,25 @@ struct llist_head *subscr_bsc_active_subscribers(void)
 	return &active_subscribers;
 }
 
+/* return static buffer with printable name of VLR subscriber */
+const char *vlr_sub_name(struct vlr_subscriber *vsub)
+{
+	static char buf[32];
+	if (!vsub)
+		return "unknown";
+	if (vsub->imsi[0])
+		strncpy(buf, vsub->imsi, sizeof(buf));
+	else
+		snprintf(buf, sizeof(buf), "0x%08x", vsub->tmsi);
+	buf[sizeof(buf)-1] = '\0';
+	return buf;
+}
 
 char *subscr_name(struct gsm_subscriber *subscr)
 {
 	if (!subscr)
-		return vlr_sub_name(NULL);
-	return vlr_sub_name(subscr->vsub);
+		return (char*)vlr_sub_name(NULL);
+	return (char*)vlr_sub_name(subscr->vsub);
 }
 
 struct gsm_subscriber *subscr_alloc(void)

@@ -67,20 +67,6 @@ uint32_t vlr_timer(struct vlr_instance *vlr, uint32_t timer)
 	return vlr->cfg.timer[tidx];
 }
 
-/* return static buffer with printable name of VLR subscriber */
-const char *vlr_sub_name(struct vlr_subscriber *vsub)
-{
-	static char buf[32];
-	if (!vsub)
-		return "unknown";
-	if (vsub->imsi[0])
-		strncpy(buf, vsub->imsi, sizeof(buf));
-	else
-		snprintf(buf, sizeof(buf), "0x%08x", vsub->tmsi);
-	buf[sizeof(buf)-1] = '\0';
-	return buf;
-}
-
 struct vlr_subscriber *
 vlr_subscr_find_by_imsi(struct vlr_instance *vlr, const char *imsi)
 {
