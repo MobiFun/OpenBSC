@@ -25,7 +25,7 @@
 #include <osmocom/gsm/gsup.h>
 #include <osmocom/gsm/apn.h>
 #include <openbsc/gsm_subscriber.h>
-#include <openbsc/gprs_gsup_client.h>
+#include <openbsc/gsup_client.h>
 #include <openbsc/vlr.h>
 #include <openbsc/gprs_sgsn.h>
 #include <openbsc/gprs_utils.h>
@@ -95,7 +95,7 @@ vlr_subscr_find_by_tmsi(struct vlr_instance *vlr, uint32_t tmsi)
 static int vlr_tx_gsup_message(struct vlr_instance *vlr,
 			       struct osmo_gsup_message *gsup_msg)
 {
-	struct msgb *msg = gprs_gsup_msgb_alloc();
+	struct msgb *msg = gsup_client_msgb_alloc();
 
 	osmo_gsup_encode(msg, gsup_msg);
 
@@ -109,7 +109,7 @@ static int vlr_tx_gsup_message(struct vlr_instance *vlr,
 	LOGP(DVLR, LOGL_DEBUG,
 		    "Sending GSUP, will send: %s\n", msgb_hexdump(msg));
 
-	return gprs_gsup_client_send(vlr->gsup_client, msg);
+	return gsup_client_send(vlr->gsup_client, msg);
 }
 
 /* Transmit GSUP message for subscriber to HLR, using IMSI from subscriber */
@@ -569,7 +569,7 @@ static int vlr_sub_handle_cancel_req(struct vlr_subscriber *vsub,
 }
 
 /* Incoming handler for GSUP from HLR */
-static int vlr_gsupc_read_cb(struct gprs_gsup_client *gsupc, struct msgb *msg)
+static int vlr_gsupc_read_cb(struct gsup_client *gsupc, struct msgb *msg)
 {
 	struct vlr_instance *vlr = (struct vlr_instance *) gsupc->data;
 	struct vlr_subscriber *vsub;
@@ -724,7 +724,7 @@ struct vlr_instance *vlr_init(void *ctx, const struct vlr_ops *ops,
 	struct vlr_instance *vlr = talloc_zero(ctx, struct vlr_instance);
 	OSMO_ASSERT(vlr);
 
-	vlr->gsup_client = gprs_gsup_client_create(addr_str, port, &vlr_gsupc_read_cb, NULL);
+	vlr->gsup_client = gsup_client_create(addr_str, port, &vlr_gsupc_read_cb, NULL);
 	if (!vlr->gsup_client) {
 		talloc_free(vlr);
 		return NULL;

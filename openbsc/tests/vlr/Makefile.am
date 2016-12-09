@@ -14,9 +14,7 @@ noinst_PROGRAMS = vlr_test
 vlr_test_SOURCES = vlr_test.c
 vlr_test_LDADD = \
 	$(top_builddir)/src/libvlr/libvlr.a \
-	$(top_builddir)/src/gprs/gprs_gsup_client.o \
-	$(top_builddir)/src/gprs/oap.o \
-	$(top_builddir)/src/libcommon/debug.o \
+	$(top_builddir)/src/libcommon/libcommon.a \
 	$(LIBOSMOCORE_LIBS) \
 	$(LIBOSMOGSM_LIBS) \
 	$(LIBOSMOVTY_LIBS) \

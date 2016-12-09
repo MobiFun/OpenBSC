@@ -173,7 +173,7 @@ enum vlr_timer {
 struct vlr_instance {
 	struct llist_head subscribers;
 	struct llist_head operations;
-	struct gprs_gsup_client *gsup_client;
+	struct gsup_client *gsup_client;
 	struct vlr_ops ops;
 	struct {
 		bool retrieve_imeisv;
