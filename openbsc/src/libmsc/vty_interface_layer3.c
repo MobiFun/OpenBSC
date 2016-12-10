@@ -53,6 +53,8 @@
 
 #include <osmocom/vty/logging.h>
 
+#include <openbsc/osmo_msc.h>
+
 #include "meas_feed.h"
 
 extern struct gsm_network *gsmnet_from_vty(struct vty *v);
@@ -1030,6 +1032,50 @@ DEFUN(logging_fltr_imsi,
 	return CMD_SUCCESS;
 }
 
+static struct cmd_node hlr_node = {
+	HLR_NODE,
+	"%s(config-hlr)# ",
+	1,
+};
+
+DEFUN(cfg_hlr, cfg_hlr_cmd,
+      "hlr", "Configure connection to the HLR")
+{
+	vty->node = HLR_NODE;
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_hlr_remote_ip, cfg_hlr_remote_ip_cmd, "remote-ip A.B.C.D",
+      "Remote GSUP address of the HLR\n"
+      "Remote GSUP address (default: " MSC_HLR_REMOTE_IP_DEFAULT ")")
+{
+	struct gsm_network *gsmnet = gsmnet_from_vty(vty);
+	talloc_free((void*)gsmnet->gsup_server_addr_str);
+	gsmnet->gsup_server_addr_str = talloc_strdup(gsmnet, argv[0]);
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_hlr_remote_port, cfg_hlr_remote_port_cmd, "remote-port <1-65535>",
+      "Remote GSUP port of the HLR\n"
+      "Remote GSUP port (default: " OSMO_STRINGIFY(MSC_HLR_REMOTE_PORT_DEFAULT) ")")
+{
+	struct gsm_network *gsmnet = gsmnet_from_vty(vty);
+	gsmnet->gsup_server_port = atoi(argv[0]);
+	return CMD_SUCCESS;
+}
+
+static int config_write_hlr(struct vty *vty)
+{
+	struct gsm_network *gsmnet = gsmnet_from_vty(vty);
+
+	vty_out(vty, "hlr%s", VTY_NEWLINE);
+	vty_out(vty, " remote-ip %s%s",
+		gsmnet->gsup_server_addr_str, VTY_NEWLINE);
+	vty_out(vty, " remote-port %u%s",
+		gsmnet->gsup_server_port, VTY_NEWLINE);
+	return CMD_SUCCESS;
+}
+
 static struct cmd_node nitb_node = {
 	NITB_NODE,
 	"%s(config-nitb)# ",
@@ -1168,6 +1214,10 @@ int bsc_vty_init_extra(void)
 	install_element(CFG_LOG_NODE, &log_level_sms_cmd);
 	install_element(CFG_LOG_NODE, &logging_fltr_imsi_cmd);
 
+	install_element(CONFIG_NODE, &cfg_hlr_cmd);
+	install_node(&hlr_node, config_write_hlr);
+	install_element(HLR_NODE, &cfg_hlr_remote_ip_cmd);
+	install_element(HLR_NODE, &cfg_hlr_remote_port_cmd);
 
 	install_element(CONFIG_NODE, &cfg_nitb_cmd);
 	install_node(&nitb_node, config_write_nitb);

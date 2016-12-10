@@ -355,6 +355,9 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	msc_vlr_init(tall_bsc_ctx, bsc_gsmnet->gsup_server_addr_str,
+		     bsc_gsmnet->gsup_server_port);
+
 	if (db_init(database_name)) {
 		printf("DB: Failed to init database. Please check the option settings.\n");
 		return -1;

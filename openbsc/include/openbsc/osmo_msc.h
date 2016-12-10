@@ -9,6 +9,9 @@
 
 #include "bsc_api.h"
 
+#define MSC_HLR_REMOTE_IP_DEFAULT "127.0.0.1"
+#define MSC_HLR_REMOTE_PORT_DEFAULT 2222
+
 enum subscr_conn_fsm_event {
 	/* LU FSM has terminated */
 	SUB_CON_E_LU_RES,
@@ -31,4 +34,8 @@ void subscr_con_put(struct gsm_subscriber_connection *conn);
 struct osmo_fsm_inst *
 msc_create_conn_fsm(struct gsm_subscriber_connection *conn,
 		    const char *id);
+
+int msc_vlr_init(void *ctx,
+		 const char *gsup_server_addr_str,
+		 uint16_t gsup_server_port);
 #endif

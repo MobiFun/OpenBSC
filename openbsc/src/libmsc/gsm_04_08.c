@@ -3660,6 +3660,15 @@ static const struct vlr_ops msc_vlr_ops = {
 	.subscr_assoc = msc_vlr_subscr_assoc,
 };
 
+int msc_vlr_init(void *ctx,
+		 const char *gsup_server_addr_str,
+		 uint16_t gsup_server_port)
+{
+	g_vlr = vlr_init(ctx, &msc_vlr_ops, gsup_server_addr_str,
+			 gsup_server_port);
+	return g_vlr? 0 : -ENOMEM;
+}
+
 /*
  * This will be run by the linker when loading the DSO. We use it to
  * do system initialization, e.g. registration of signal handlers.
@@ -3667,6 +3676,4 @@ static const struct vlr_ops msc_vlr_ops = {
 static __attribute__((constructor)) void on_dso_load_0408(void)
 {
 	osmo_signal_register_handler(SS_ABISIP, handle_abisip_signal, NULL);
-
-	g_vlr = vlr_init(tall_bsc_ctx, &msc_vlr_ops, NULL, 0);
 }

@@ -374,6 +374,10 @@ struct gsm_network {
 	 * BTS|RNC specific timezone overrides for multi-tz networks in
 	 * OsmoCSCN, this should be tied to the location area code (LAC). */
 	struct gsm_tz tz;
+
+	/* MSC: GSUP server address of the HLR */
+	const char *gsup_server_addr_str;
+	uint16_t gsup_server_port;
 };
 
 struct osmo_esme;

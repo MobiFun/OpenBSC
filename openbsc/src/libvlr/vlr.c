@@ -718,13 +718,16 @@ int vlr_sub_rx_tmsi_reall_compl(struct vlr_subscriber *vsub)
 	}
 }
 
-struct vlr_instance *vlr_init(void *ctx, const struct vlr_ops *ops,
-			      const char *addr_str, uint16_t port)
+struct vlr_instance *
+vlr_init(void *ctx, const struct vlr_ops *ops,
+	 const char *gsup_server_addr_str, uint16_t gsup_server_port)
 {
 	struct vlr_instance *vlr = talloc_zero(ctx, struct vlr_instance);
 	OSMO_ASSERT(vlr);
 
-	vlr->gsup_client = gsup_client_create(addr_str, port, &vlr_gsupc_read_cb, NULL);
+	vlr->gsup_client = gsup_client_create(gsup_server_addr_str,
+					      gsup_server_port,
+					      &vlr_gsupc_read_cb, NULL);
 	if (!vlr->gsup_client) {
 		talloc_free(vlr);
 		return NULL;

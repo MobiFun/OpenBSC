@@ -210,7 +210,8 @@ int vlr_sub_tx_auth_fail_rep(struct vlr_subscriber *vsub);
 int vlr_sub_rx_tmsi_reall_compl(struct vlr_subscriber *vsub);
 
 struct vlr_instance *
-vlr_init(void *ctx, const struct vlr_ops *ops, const char *addr_str, uint16_t port);
+vlr_init(void *ctx, const struct vlr_ops *ops,
+	 const char *gsup_server_addr_str, uint16_t gsup_server_port);
 
 
 /* internal use only */
