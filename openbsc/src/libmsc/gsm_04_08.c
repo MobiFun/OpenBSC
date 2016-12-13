@@ -443,12 +443,19 @@ static int mm_rx_loc_upd_req(struct gsm_subscriber_connection *conn, struct msgb
 	uint32_t tmsi;
 	char *imsi;
 	struct osmo_location_area_id old_lai, new_lai;
+	struct osmo_fsm_inst *lu_fsm;
+	int rc;
 
  	lu = (struct gsm48_loc_upd_req *) gh->data;
 
 	mi_type = lu->mi[0] & GSM_MI_TYPE_MASK;
 
 	gsm48_mi_to_string(mi_string, sizeof(mi_string), lu->mi, lu->mi_len);
+
+	rc = msc_create_conn_fsm(conn, mi_string);
+	if (rc)
+		/* logging already happened in msc_create_conn_fsm() */
+		return rc;
 
 	DEBUGPC(DMM, "MI(%s)=%s type=%s ", gsm48_mi_type_name(mi_type),
 		mi_string, get_value_string(lupd_names, lu->type));
@@ -498,13 +505,20 @@ static int mm_rx_loc_upd_req(struct gsm_subscriber_connection *conn, struct msgb
 	new_lai.lac = conn->bts->location_area_code;
 	DEBUGPC(DMM, "LU/new-LAC: %u/%u ", old_lai.lac, new_lai.lac);
 
-	conn->lu_fsm = vlr_loc_update(conn->master_fsm, SUB_CON_E_LU_RES,
-				      g_vlr, conn, vlr_lu_type, tmsi, imsi,
-				      &old_lai, &new_lai);
-	if (!conn->lu_fsm) {
+	lu_fsm = vlr_loc_update(conn->master_fsm, SUB_CON_E_LU_RES,
+				g_vlr, conn, vlr_lu_type, tmsi, imsi,
+				&old_lai, &new_lai);
+	if (!lu_fsm) {
 		DEBUGPC(DRR, "%s: Can't start LU FSM\n", mi_string);
 		return 0;
 	}
+
+	/* From vlr_loc_update() we expect an implicit dispatch of
+	 * VLR_ULA_E_UPDATE_LA, and thus we expect msc_vlr_subscr_assoc() to
+	 * already have been called and completed. */
+	OSMO_ASSERT(conn->subscr);
+	OSMO_ASSERT(conn->subscr->vsub);
+	OSMO_ASSERT(conn->subscr->vsub->lu_fsm == lu_fsm);
 
 	/* increase conn ref count for the LU FSM */
 	subscr_con_get(conn);
