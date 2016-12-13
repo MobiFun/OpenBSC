@@ -38,4 +38,7 @@ msc_create_conn_fsm(struct gsm_subscriber_connection *conn,
 int msc_vlr_init(void *ctx,
 		 const char *gsup_server_addr_str,
 		 uint16_t gsup_server_port);
+
+void msc_release_connection(struct gsm_subscriber_connection *conn);
+
 #endif
