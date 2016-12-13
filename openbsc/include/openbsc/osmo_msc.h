@@ -31,9 +31,7 @@ struct bsc_api *msc_bsc_api();
 struct gsm_subscriber_connection *subscr_con_get(struct gsm_subscriber_connection *conn);
 void subscr_con_put(struct gsm_subscriber_connection *conn);
 
-struct osmo_fsm_inst *
-msc_create_conn_fsm(struct gsm_subscriber_connection *conn,
-		    const char *id);
+int msc_create_conn_fsm(struct gsm_subscriber_connection *conn, const char *id);
 
 int msc_vlr_init(void *ctx,
 		 const char *gsup_server_addr_str,
