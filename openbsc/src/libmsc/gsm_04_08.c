@@ -3599,8 +3599,8 @@ static int msc_vlr_tx_lu_rej(void *msc_conn_ref, uint8_t cause)
 /* VLR asks us to start using ciphering */
 static int msc_vlr_set_ciph_mode(void *msc_conn_ref)
 {
-	struct gsm_subscriber_connection *conn = msc_conn_ref;
 #if 0
+	struct gsm_subscriber_connection *conn = msc_conn_ref;
 	struct vlr_subscriber *vsub = conn->subscr;
 	struct gms_auth_tuple *tuple = subscr->last_tuple;
 
@@ -3609,6 +3609,8 @@ static int msc_vlr_set_ciph_mode(void *msc_conn_ref)
 
 	return gsm0808_cipher_mode(conn, subscr->net->a5_encryption,
 		                   tuple->vec.kc, 8, 0);
+#else
+	return -1;
 #endif
 }
 

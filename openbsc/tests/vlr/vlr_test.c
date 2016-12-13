@@ -31,12 +31,13 @@ static struct vlr_instance *g_vlr;
  * Finite State Machine simulating MS and MSC towards VLR
  ***********************************************************************/
 
-static void timer_error_cb(struct osmo_fsm_inst *fi)
+static int timer_error_cb(struct osmo_fsm_inst *fi)
 {
 	struct vlr_subscriber *vsub = fi->priv;
 	LOGPFSM(fi, "timer expired waiting for completion\n");
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_ERROR, NULL);
 	vlr_sub_cleanup(vsub);
+	return 1;
 }
 
 enum testvlr_mode {
@@ -55,6 +56,8 @@ struct testvlr_priv {
 	struct osmo_location_area_id new_lai;
 
 	struct vlr_subscriber *subscr;
+
+	struct osmo_fsm_inst *lu_fsm;
 };
 
 #define fsi_priv(x)	(struct testvlr_priv *)(x)->priv
@@ -157,10 +160,10 @@ static void fsm_f_null(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 			imsi = priv->imsi;
 		else
 			tmsi = priv->tmsi;
-		priv->subscr = vlr_loc_update(g_vlr, fi,
-					      VLR_LU_TYPE_IMSI_ATTACH,
-					      tmsi, imsi,
-					      &priv->old_lai,
+		priv->lu_fsm = vlr_loc_update(fi, EVT_VLR_LU_ACK,
+					      g_vlr, NULL,
+					      VLR_LU_TYPE_IMSI_ATTACH, tmsi,
+					      imsi, &priv->old_lai,
 					      &priv->new_lai);
 		OSMO_ASSERT(priv->subscr);
 		osmo_fsm_inst_state_chg(fi, ST_LU_SENT, 0, 0);
@@ -220,6 +223,7 @@ static void fsm_f_lu_sent(struct osmo_fsm_inst *fi, uint32_t event,
 	}
 }
 
+#if 0
 static void fsm_f_resync_sent(struct osmo_fsm_inst *fi, uint32_t event,
 			      void *data)
 {
@@ -238,6 +242,7 @@ static void fsm_f_resync_sent(struct osmo_fsm_inst *fi, uint32_t event,
 		break;
 	}
 }
+#endif
 
 static void fsm_f_wait_lu_ack(struct osmo_fsm_inst *fi, uint32_t event,
 			      void *data)
@@ -267,6 +272,7 @@ static void fsm_f_imsi_sent(struct osmo_fsm_inst *fi, uint32_t event,
 	}
 }
 
+#if 0
 static void fsm_f_areq_sent(struct osmo_fsm_inst *fi, uint32_t event,
 			    void *data)
 {
@@ -277,6 +283,7 @@ static void fsm_f_areq_sent(struct osmo_fsm_inst *fi, uint32_t event,
 		break;
 	}
 }
+#endif
 
 static struct osmo_fsm_state fsm_success_states[] = {
 	[ST_NULL] = {
@@ -390,6 +397,7 @@ static struct osmo_fsm test_sub_pres_vlr_fsm = {
 	.timer_cb = timer_error_cb,
 };
 
+#if 0
 static void start_sub_pres_vlr(void *ctx, uint32_t tmsi, const char *imsi)
 {
 	struct osmo_fsm_inst *fi;
@@ -400,6 +408,7 @@ static void start_sub_pres_vlr(void *ctx, uint32_t tmsi, const char *imsi)
 	fi = osmo_fsm_inst_alloc(&test_sub_pres_vlr_fsm, ctx, vsub, LOGL_DEBUG, vsub->imsi);
 	osmo_fsm_inst_dispatch(fi, TSPV_E_START, NULL);
 }
+#endif
 
 /* Testing of Update_HLR_VLR */
 
@@ -471,6 +480,7 @@ static struct osmo_fsm test_upd_hlr_vlr_fsm = {
 	.timer_cb = timer_error_cb,
 };
 
+#if 0
 static void start_upd_hlr_vlr(void *ctx, uint32_t tmsi, const char *imsi)
 {
 	struct osmo_fsm_inst *fi;
@@ -486,6 +496,7 @@ static void start_upd_hlr_vlr(void *ctx, uint32_t tmsi, const char *imsi)
 	vsub->lu_fsm = fi;
 	osmo_fsm_inst_dispatch(fi, TUHV_E_START, NULL);
 }
+#endif
 
 /***********************************************************************
  * Integration with VLR code
@@ -619,17 +630,6 @@ start_lu(enum testvlr_mode mode, uint32_t tmsi,
 /***********************************************************************
  * Main / Misc
  ***********************************************************************/
-
-/* dummy for debug.c */
-struct gsm_subscriber *subscr_put(struct gsm_subscriber *subscr)
-{
-	return subscr;
-}
-/* dummy for debug.c */
-struct gsm_subscriber *subscr_get(struct gsm_subscriber *subscr)
-{
-	return subscr;
-}
 
 static struct osmo_timer_list tmr;
 
