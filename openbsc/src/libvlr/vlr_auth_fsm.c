@@ -21,6 +21,7 @@
 
 
 #include <osmocom/core/fsm.h>
+#include <osmocom/core/utils.h>
 #include <osmocom/gsm/gsup.h>
 #include <openbsc/vlr.h>
 #include <openbsc/debug.h>
@@ -39,6 +40,15 @@ static const struct value_string fsm_auth_event_names[] = {
 	{ VLR_AUTH_E_MS_AUTH_FAIL,	"MS-AUTH-FAIL" },
 	{ VLR_AUTH_E_MS_ID_IMSI,	"MS-ID-IMSI" },
 	{ 0, NULL }
+};
+
+const struct value_string vlr_auth_fsm_result_names[] = {
+	OSMO_VALUE_STRING(VLR_AUTH_RES_ABORTED),
+	OSMO_VALUE_STRING(VLR_AUTH_RES_UNKNOWN_SUBSCR),
+	OSMO_VALUE_STRING(VLR_AUTH_RES_PROC_ERR),
+	OSMO_VALUE_STRING(VLR_AUTH_RES_AUTH_FAILED),
+	OSMO_VALUE_STRING(VLR_AUTH_RES_PASSED),
+	{0, NULL}
 };
 
 /* private state of the auth_fsm_instance */

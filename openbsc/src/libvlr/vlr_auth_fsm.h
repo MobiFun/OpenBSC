@@ -1,5 +1,7 @@
 #pragma once
 
+#include <osmocom/core/utils.h>
+
 /* Parameters to VLR_AUTH_E_MS_AUTH_RESP */
 struct vlr_auth_resp_par {
 	bool is_r99;
@@ -17,6 +19,12 @@ enum vlr_auth_fsm_result {
 	VLR_AUTH_RES_AUTH_FAILED,
 	VLR_AUTH_RES_PASSED,
 };
+
+extern const struct value_string vlr_auth_fsm_result_names[];
+static inline const char *vlr_auth_fsm_result_name(enum vlr_auth_fsm_result val)
+{
+	return get_value_string(vlr_auth_fsm_result_names, val);
+}
 
 enum vlr_fsm_auth_event {
 	VLR_AUTH_E_START,
