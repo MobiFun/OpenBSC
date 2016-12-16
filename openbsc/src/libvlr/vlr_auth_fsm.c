@@ -238,6 +238,7 @@ static void auth_fsm_wait_ai(struct osmo_fsm_inst *fi, uint32_t event,
 			} else {
 				/* result = procedure error */
 				auth_fsm_term(fi, VLR_AUTH_RES_PROC_ERR);
+				return;
 			}
 		}
 	}
