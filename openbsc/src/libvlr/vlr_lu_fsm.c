@@ -1025,6 +1025,16 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 	},
 };
 
+static void fsm_lu_cleanup(struct osmo_fsm_inst *fi, enum osmo_fsm_term_cause cause)
+{
+	struct lu_fsm_priv *lfp = fi->priv;
+	struct vlr_subscriber *vsub = lfp->vsub;
+
+	if (vsub && vsub->lu_fsm == fi)
+		vsub->lu_fsm = NULL;
+	LOGPFSM(fi, "fsm_lu_cleanup called\n");
+}
+
 static struct osmo_fsm vlr_lu_fsm = {
 	.name = "Update_Location_Area_VLR",
 	.states = vlr_lu_fsm_states,
@@ -1033,6 +1043,7 @@ static struct osmo_fsm vlr_lu_fsm = {
 	.allstate_action = NULL,
 	.log_subsys = DVLR,
 	.event_names = fsm_lu_event_names,
+	.cleanup = fsm_lu_cleanup,
 };
 
 struct osmo_fsm_inst *
