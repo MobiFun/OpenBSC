@@ -168,6 +168,9 @@ static void auth_fsm_term(struct osmo_fsm_inst *fi, enum vlr_auth_fsm_result res
 	struct auth_fsm_priv *afp = fi->priv;
 	struct vlr_subscriber *vsub = afp->vsub;
 
+	LOGPFSM(fi, "Authentication terminating with result %s\n",
+		vlr_auth_fsm_result_name(res));
+
 	/* Do one final state transition (mostly for logging purpose) */
 	if (res == VLR_AUTH_RES_PASSED)
 		osmo_fsm_inst_state_chg(fi, VLR_SUB_AS_AUTHENTICATED, 0, 0);
