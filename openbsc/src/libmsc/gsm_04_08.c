@@ -3720,6 +3720,7 @@ int msc_create_conn_fsm(struct gsm_subscriber_connection *conn, const char *id)
 {	
 	struct osmo_fsm_inst *fi;
 	OSMO_ASSERT(conn);
+	OSMO_ASSERT(!conn->master_fsm);
 
 	fi = osmo_fsm_inst_alloc(&subscr_conn_fsm, conn, conn, LOGL_DEBUG, id);
 
