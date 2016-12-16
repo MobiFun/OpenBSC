@@ -163,7 +163,7 @@ static int _vlr_sub_authenticate(struct vlr_subscriber *vsub)
 
 	/* Caller ensures we have vectors available */
 	at = vlr_sub_get_auth_tuple(vsub, last_keyseq);
-	OSMO_ASSERT(at && at->vec.res && at->vec.res_len >=4);
+	OSMO_ASSERT(at);
 
 	/* Transmit auth req to subscriber */
 	vsub->last_tuple = at;
