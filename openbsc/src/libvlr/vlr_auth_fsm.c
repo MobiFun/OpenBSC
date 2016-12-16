@@ -72,7 +72,7 @@ vlr_sub_get_auth_tuple(struct vlr_subscriber *vsub, unsigned int key_seq)
 		return NULL;
 
 	if (key_seq == GSM_KEY_SEQ_INVAL)
-		/* Start with 0 after increment moduleo array size */
+		/* Start with 0 after increment modulo array size */
 		idx = ARRAY_SIZE(vsub->auth_tuples) - 1;
 	else
 		idx = key_seq;
