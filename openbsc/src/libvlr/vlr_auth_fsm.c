@@ -248,7 +248,6 @@ static void auth_fsm_wait_ai(struct osmo_fsm_inst *fi, uint32_t event,
 		goto pass;
 		break;
 	case VLR_AUTH_E_HLR_SAI_NACK:
-		/* lesult = unknown subscriber */
 		auth_fsm_term(fi, VLR_AUTH_RES_UNKNOWN_SUBSCR);
 		break;
 	}
