@@ -793,6 +793,7 @@ static int gsm48_rx_mm_serv_req(struct gsm_subscriber_connection *conn, struct m
 	uint8_t *mi = (classmark2 + classmark2_len + 1);
 	struct osmo_location_area_id lai;
 	struct osmo_fsm_inst *proc_arq_fsm;
+	int rc;
 
 	lai.plmn.mcc = conn->network->country_code;
 	lai.plmn.mnc = conn->network->network_code;
@@ -827,6 +828,11 @@ static int gsm48_rx_mm_serv_req(struct gsm_subscriber_connection *conn, struct m
 		return gsm48_tx_mm_serv_rej(conn,
 					    GSM48_REJECT_INCORRECT_MESSAGE);
 	}
+
+	rc = msc_create_conn_fsm(conn, mi_string);
+	if (rc)
+		/* logging already happened in msc_create_conn_fsm() */
+		return rc;
 
 	proc_arq_fsm = vlr_proc_acc_req(conn->master_fsm,
 					SUB_CON_E_PARQ_RES, g_vlr,
