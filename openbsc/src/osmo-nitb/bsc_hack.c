@@ -355,6 +355,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	osmo_fsm_log_addr(false);
 	msc_vlr_init(tall_bsc_ctx, bsc_gsmnet->gsup_server_addr_str,
 		     bsc_gsmnet->gsup_server_port);
 
