@@ -615,6 +615,7 @@ static void vlr_loc_upd_node_4(struct osmo_fsm_inst *fi)
 static void vlr_loc_upd_node_b(struct osmo_fsm_inst *fi)
 {
 	struct lu_fsm_priv *lfp = fi->priv;
+	/* FIXME */
 	if (0) { /* IMEISV or PgA to send */
 		vlr_loc_upd_node_4(fi);
 	} else {
