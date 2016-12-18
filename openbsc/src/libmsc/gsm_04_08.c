@@ -507,7 +507,8 @@ static int mm_rx_loc_upd_req(struct gsm_subscriber_connection *conn, struct msgb
 
 	lu_fsm = vlr_loc_update(conn->master_fsm, SUB_CON_E_LU_RES,
 				g_vlr, conn, vlr_lu_type, tmsi, imsi,
-				&old_lai, &new_lai);
+				&old_lai, &new_lai,
+				conn->network->authentication_required);
 	if (!lu_fsm) {
 		DEBUGPC(DRR, "%s: Can't start LU FSM\n", mi_string);
 		return 0;

@@ -551,6 +551,7 @@ struct lu_fsm_priv {
 	uint32_t tmsi;
 	struct osmo_location_area_id old_lai;
 	struct osmo_location_area_id new_lai;
+	bool authentication_required;
 };
 
 
@@ -563,12 +564,12 @@ static bool lai_in_this_vlr(struct vlr_instance *vlr,
 }
 
 /* Determine if authentication is required */
-static bool is_auth_required(struct vlr_subscriber *vsub)
+static bool is_auth_required(struct lu_fsm_priv *lfp)
 {
 	/* The cases where the authentication procedure should be used
 	 * are defined in 3GPP TS 33.102 */
-	/* We always require authentication, for now */
-	return true;
+	/* For now we use a default value passed in to vlr_lu_fsm(). */
+	return lfp->authentication_required;
 }
 
 /* Determine if a HLR Update is required */
@@ -655,7 +656,7 @@ static void vlr_loc_upd_node1(struct osmo_fsm_inst *fi)
 
 	OSMO_ASSERT(vsub);
 
-	if (is_auth_required(lfp->vsub)) {
+	if (is_auth_required(lfp)) {
 		/* Authenticate_VLR */
 		osmo_fsm_inst_state_chg(fi, VLR_ULA_S_WAIT_AUTH,
 					LU_TIMEOUT_LONG, 0);
@@ -1051,7 +1052,8 @@ vlr_loc_update(struct osmo_fsm_inst *parent, uint32_t parent_term,
 		struct vlr_instance *vlr, void *msc_conn_ref,
 		enum vlr_lu_type type, uint32_t tmsi, const char *imsi,
 		const struct osmo_location_area_id *old_lai,
-		const struct osmo_location_area_id *new_lai)
+		const struct osmo_location_area_id *new_lai,
+		bool authentication_required)
 {
 	struct osmo_fsm_inst *fi;
 	struct lu_fsm_priv *lfp;
@@ -1068,6 +1070,7 @@ vlr_loc_update(struct osmo_fsm_inst *parent, uint32_t parent_term,
 	lfp->old_lai = *old_lai;
 	lfp->new_lai = *new_lai;
 	lfp->lu_by_tmsi = true;
+	lfp->authentication_required = authentication_required;
 	if (imsi) {
 		strncpy(lfp->imsi, imsi, sizeof(lfp->imsi)-1);
 		lfp->imsi[sizeof(lfp->imsi)-1] = '\0';

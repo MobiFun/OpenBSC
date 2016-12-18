@@ -191,7 +191,8 @@ vlr_loc_update(struct osmo_fsm_inst *parent, uint32_t parent_term,
 		struct vlr_instance *vlr, void *msc_conn_ref,
 		enum vlr_lu_type type, uint32_t tmsi, const char *imsi,
 		const struct osmo_location_area_id *old_lai,
-		const struct osmo_location_area_id *new_lai);
+		const struct osmo_location_area_id *new_lai,
+		bool authentication_required);
 
 /* Process_Access_Request (CM SERV REQ / PAGING RESP) */
 struct osmo_fsm_inst *
