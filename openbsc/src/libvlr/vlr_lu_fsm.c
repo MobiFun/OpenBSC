@@ -837,7 +837,6 @@ static void lu_fsm_wait_auth(struct osmo_fsm_inst *fi, uint32_t event,
 			/* Result == Pass */
 			vlr_loc_upd_post_auth(fi);
 			return;
-			break;
 		case VLR_AUTH_RES_ABORTED:
 			/* go to Idle with no response */
 			rej_cause = 0;
