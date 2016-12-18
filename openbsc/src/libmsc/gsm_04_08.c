@@ -838,7 +838,8 @@ static int gsm48_rx_mm_serv_req(struct gsm_subscriber_connection *conn, struct m
 	proc_arq_fsm = vlr_proc_acc_req(conn->master_fsm,
 					SUB_CON_E_PARQ_RES, g_vlr,
 					conn, VLR_PR_ARQ_T_CM_SERV_REQ,
-					mi-1, &lai);
+					mi-1, &lai,
+					conn->network->authentication_required);
 	if (!proc_arq_fsm)
 		return gsm48_tx_mm_serv_rej(conn,
 					    GSM48_REJECT_IMSI_UNKNOWN_IN_VLR);
@@ -1044,7 +1045,8 @@ static int gsm48_rx_rr_pag_resp(struct gsm_subscriber_connection *conn, struct m
 	proc_arq_fsm = vlr_proc_acc_req(conn->master_fsm,
 					SUB_CON_E_PARQ_RES, g_vlr,
 					conn, VLR_PR_ARQ_T_PAGING_RESP,
-					mi_lv, &lai);
+					mi_lv, &lai,
+					conn->network->authentication_required);
 	if (!proc_arq_fsm) {
 		/* FIXME */
 		return -1;

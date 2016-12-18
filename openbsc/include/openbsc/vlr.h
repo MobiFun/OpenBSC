@@ -279,6 +279,7 @@ struct osmo_fsm_inst *
 vlr_proc_acc_req(struct osmo_fsm_inst *parent, uint32_t parent_term,
 		 struct vlr_instance *vlr, void *msc_conn_ref,
 		 enum vlr_parq_type type, const uint8_t *mi_lv,
-		 const struct osmo_location_area_id *lai);
+		 const struct osmo_location_area_id *lai,
+		 bool authentication_required);
 
 void vlr_parq_fsm_init(void);

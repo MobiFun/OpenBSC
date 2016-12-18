@@ -73,6 +73,7 @@ struct proc_arq_priv {
 	char imsi[16];
 	uint32_t tmsi;
 	struct osmo_location_area_id lai;
+	bool authentication_required;
 };
 
 static void assoc_par_with_subscr(struct osmo_fsm_inst *fi, struct vlr_subscriber *vsub)
@@ -208,7 +209,7 @@ static void proc_arq_vlr_fn_post_imsi(struct osmo_fsm_inst *fi)
 	OSMO_ASSERT(vsub);
 
 	/* TODO: Identity IMEI -> System Failure */
-	if (1 /* auth_required */) {
+	if (par->authentication_required) {
 		osmo_fsm_inst_state_chg(fi, PR_ARQ_S_WAIT_AUTH,
 					0, 0);
 		vsub->auth_fsm = auth_fsm_start(vsub, fi->log_level, fi,
@@ -462,7 +463,8 @@ struct osmo_fsm_inst *
 vlr_proc_acc_req(struct osmo_fsm_inst *parent, uint32_t parent_term,
 		 struct vlr_instance *vlr, void *msc_conn_ref,
 		 enum vlr_parq_type type, const uint8_t *mi_lv,
-		 const struct osmo_location_area_id *lai)
+		 const struct osmo_location_area_id *lai,
+		 bool authentication_required)
 {
 	struct osmo_fsm_inst *fi;
 	struct proc_arq_priv *par;
@@ -480,6 +482,7 @@ vlr_proc_acc_req(struct osmo_fsm_inst *parent, uint32_t parent_term,
 	par->msc_conn_ref = msc_conn_ref;
 	par->type = type;
 	par->lai = *lai;
+	par->authentication_required = authentication_required;
 
 	gsm48_mi_to_string(mi_string, sizeof(mi_string), mi_lv+1, mi_lv[0]);
 	mi_type = mi_lv[1] & GSM_MI_TYPE_MASK;
