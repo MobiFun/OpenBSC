@@ -583,6 +583,7 @@ static bool hlr_update_needed(struct vlr_subscriber *vsub)
 /* Terminate a Location Update FSM Instance */
 static void lu_fsm_term(struct osmo_fsm_inst *fi)
 {
+	osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 	/* if the MSC is registered as parent, it will get notified via
 	 * the usual signalling */
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REGULAR, NULL);
@@ -600,7 +601,6 @@ static void vlr_loc_upd_node_4(struct osmo_fsm_inst *fi)
 		/* FIXME: Delete subscriber record */
 		/* LU REJ: Roaming not allowed */
 		vlr->ops.tx_lu_rej(lfp->msc_conn_ref, GSM48_REJECT_ROAMING_NOT_ALLOWED);
-		osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 		lu_fsm_term(fi);
 	} else {
 		/* Update_HLR_VLR */
@@ -864,7 +864,6 @@ static void lu_fsm_wait_auth(struct osmo_fsm_inst *fi, uint32_t event,
 
 	if (rej_cause)
 		vlr->ops.tx_lu_rej(lfp->msc_conn_ref, rej_cause);
-	osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 	lu_fsm_term(fi);
 }
 
@@ -927,7 +926,6 @@ static void lu_fsm_wait_hlr_ul_res(struct osmo_fsm_inst *fi, uint32_t event,
 							VLR_ULA_E_LU_COMPL_TERM);
 			} else {
 				vlr->ops.tx_lu_rej(vsub, cause);
-				osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 				lu_fsm_term(fi);
 				/* continue in MSC ?!? */
 			}
@@ -960,7 +958,6 @@ static void lu_fsm_wait_lu_compl(struct osmo_fsm_inst *fi, uint32_t event,
 			/* TODO: Notify_gsmSCF 23.078 */
 			/* TODO: Authenticated Radio Contact Established -> ARC */
 		}
-		osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 		lu_fsm_term(fi);
 		break;
 	default:
@@ -984,7 +981,6 @@ static void lu_fsm_wait_lu_compl_standalone(struct osmo_fsm_inst *fi,
 		break;
 	case VLR_ULA_E_LU_COMPL_TERM:
 		vsub->sub_dataconf_by_hlr_ind = false;
-		osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 		lu_fsm_term(fi);
 		break;
 	default:
@@ -1071,9 +1067,10 @@ static void fsm_lu_cleanup(struct osmo_fsm_inst *fi, enum osmo_fsm_term_cause ca
 	struct lu_fsm_priv *lfp = fi->priv;
 	struct vlr_subscriber *vsub = lfp->vsub;
 
+	LOGPFSM(fi, "fsm_lu_cleanup called with cause %s\n",
+		osmo_fsm_term_cause_name(cause));
 	if (vsub && vsub->lu_fsm == fi)
 		vsub->lu_fsm = NULL;
-	LOGPFSM(fi, "fsm_lu_cleanup called\n");
 }
 
 static struct osmo_fsm vlr_lu_fsm = {
