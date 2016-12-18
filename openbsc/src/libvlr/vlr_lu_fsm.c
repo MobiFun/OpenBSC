@@ -682,18 +682,26 @@ static void vlr_loc_upd_node2(struct osmo_fsm_inst *fi)
 	/* will continue at vlr_loc_upd_node1() once IMSI arrives */
 }
 
-static void assoc_lfp_with_sub(struct osmo_fsm_inst *fi, struct vlr_subscriber *vsub)
+static int assoc_lfp_with_sub(struct osmo_fsm_inst *fi, struct vlr_subscriber *vsub)
 {
 	struct lu_fsm_priv *lfp = fi->priv;
 	struct vlr_instance *vlr = lfp->vlr;
 
-	OSMO_ASSERT(vsub->lu_fsm == NULL);
+	if (vsub->lu_fsm) {
+		LOGPFSML(fi, LOGL_ERROR,
+			 "A Location Updating process is already pending for"
+			 " this subscriber. Aborting.\n");
+		/* FIXME what now. terminate the conn? */
+		osmo_fsm_inst_term(fi, OSMO_FSM_TERM_ERROR, NULL);
+		return -EINVAL;
+	}
 	vsub->lu_fsm = fi;
 	vsub->msc_conn_ref = lfp->msc_conn_ref;
 	lfp->vsub = vsub;
 	/* Tell MSC to associate this subscriber with the given
 	 * connection */
 	vlr->ops.subscr_assoc(lfp->msc_conn_ref, lfp->vsub);
+	return 0;
 }
 
 /* 4.1.2.1: Subscriber (via MSC/SGSN) requests location update */
@@ -713,7 +721,8 @@ static void _start_lu_main(struct osmo_fsm_inst *fi)
 			OSMO_ASSERT(vsub);
 			vsub->tmsi = lfp->tmsi;	/* FIXME: what if clash? */
 			vsub->sub_dataconf_by_hlr_ind = false;
-			assoc_lfp_with_sub(fi, vsub);
+			if (assoc_lfp_with_sub(fi, vsub))
+				return; /* error */
 #if 0
 			/* FIXME: check previous VLR, (3) */
 			osmo_fsm_inst_state_chg(fi, VLR_ULA_S_WAIT_PVLR,
@@ -728,10 +737,12 @@ static void _start_lu_main(struct osmo_fsm_inst *fi)
 				OSMO_ASSERT(vsub);
 				vsub->sub_dataconf_by_hlr_ind = false;
 				vsub->tmsi = lfp->tmsi;	/* FIXME: what if clash? */
-				assoc_lfp_with_sub(fi, vsub);
+				if (assoc_lfp_with_sub(fi, vsub))
+					return; /* error */
 				vlr_loc_upd_node2(fi);
 			} else {
-				assoc_lfp_with_sub(fi, vsub);
+				if (assoc_lfp_with_sub(fi, vsub))
+					return; /* error */
 				/* We cannot have MSC area change, as the VLR
 				 * serves only one MSC */
 				vlr_loc_upd_node1(fi);
@@ -748,7 +759,8 @@ static void _start_lu_main(struct osmo_fsm_inst *fi)
 			vsub->imsi[sizeof(vsub->imsi)-1] = '\0';
 		}
 		vsub->sub_dataconf_by_hlr_ind = false;
-		assoc_lfp_with_sub(fi, vsub);
+		if (assoc_lfp_with_sub(fi, vsub))
+			return; /* error */
 		vlr_loc_upd_node1(fi);
 	}
 }
@@ -781,6 +793,10 @@ static void lu_fsm_wait_imeisv(struct osmo_fsm_inst *fi, uint32_t event,
 		/* FIXME: copy IMEISV */
 		_start_lu_main(fi);
 		break;
+	default:
+		LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+			 osmo_fsm_event_name(fi->fsm, event));
+		break;
 	}
 }
 
@@ -794,6 +810,10 @@ static void lu_fsm_wait_pvlr(struct osmo_fsm_inst *fi, uint32_t event,
 		break;
 	case VLR_ULA_E_SEND_ID_NACK:
 		vlr_loc_upd_node2(fi);
+		break;
+	default:
+		LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+			 osmo_fsm_event_name(fi->fsm, event));
 		break;
 	}
 }
@@ -834,6 +854,10 @@ static void lu_fsm_wait_auth(struct osmo_fsm_inst *fi, uint32_t event,
 			/* cause = system failure */
 			rej_cause = GSM48_REJECT_NETWORK_FAILURE;
 			break;
+		default:
+			LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+				 osmo_fsm_event_name(fi->fsm, event));
+			break;
 		}
 	} else
 		rej_cause = GSM48_REJECT_NETWORK_FAILURE;
@@ -856,6 +880,10 @@ static void lu_fsm_wait_imsi(struct osmo_fsm_inst *fi, uint32_t event,
 		strncpy(vsub->imsi, mi_string, sizeof(vsub->imsi));
 		vsub->imsi[sizeof(vsub->imsi)-1] = '\0';
 		vlr_loc_upd_node1(fi);
+		break;
+	default:
+		LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+			 osmo_fsm_event_name(fi->fsm, event));
 		break;
 	}
 }
@@ -905,6 +933,10 @@ static void lu_fsm_wait_hlr_ul_res(struct osmo_fsm_inst *fi, uint32_t event,
 			}
 		}
 		break;
+	default:
+		LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+			 osmo_fsm_event_name(fi->fsm, event));
+		break;
 	}
 }
 
@@ -931,6 +963,10 @@ static void lu_fsm_wait_lu_compl(struct osmo_fsm_inst *fi, uint32_t event,
 		osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 		lu_fsm_term(fi);
 		break;
+	default:
+		LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+			 osmo_fsm_event_name(fi->fsm, event));
+		break;
 	}
 }
 
@@ -950,6 +986,10 @@ static void lu_fsm_wait_lu_compl_standalone(struct osmo_fsm_inst *fi,
 		vsub->sub_dataconf_by_hlr_ind = false;
 		osmo_fsm_inst_state_chg(fi, VLR_ULA_S_DONE, 0, 0);
 		lu_fsm_term(fi);
+		break;
+	default:
+		LOGPFSML(fi, LOGL_ERROR, "event without effect: %s\n",
+			 osmo_fsm_event_name(fi->fsm, event));
 		break;
 	}
 }
