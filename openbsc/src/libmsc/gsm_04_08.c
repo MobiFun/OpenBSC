@@ -516,8 +516,15 @@ static int mm_rx_loc_upd_req(struct gsm_subscriber_connection *conn, struct msgb
 
 	/* From vlr_loc_update() we expect an implicit dispatch of
 	 * VLR_ULA_E_UPDATE_LA, and thus we expect msc_vlr_subscr_assoc() to
-	 * already have been called and completed. */
-	OSMO_ASSERT(conn->subscr);
+	 * already have been called and completed. Has an error occured? */
+
+	if (!conn->subscr) {
+		LOGP(DRR, LOGL_ERROR,
+		     "%s: fatal error during Location Updating attempt\n",
+		     mi_string);
+		return -EIO;
+	}
+	
 	OSMO_ASSERT(conn->subscr->vsub);
 	OSMO_ASSERT(conn->subscr->vsub->lu_fsm == lu_fsm);
 
