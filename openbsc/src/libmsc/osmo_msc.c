@@ -136,6 +136,62 @@ static void msc_ciph_m_compl(struct gsm_subscriber_connection *conn,
 	release_security_operation(conn);
 }
 
+struct gsm_subscriber_connection *msc_subscr_con_allocate(struct gsm_network *network)
+{
+	struct gsm_subscriber_connection *conn;
+
+	conn = talloc_zero(network, struct gsm_subscriber_connection);
+	if (!conn)
+		return NULL;
+
+	conn->network = network;
+	llist_add_tail(&conn->entry, &network->subscr_conns);
+	return conn;
+}
+
+void msc_subscr_cleanup(struct gsm_subscriber *subscr)
+{
+	if (subscr->vsub && subscr->vsub->lu_fsm) {
+		osmo_fsm_inst_term(subscr->vsub->lu_fsm, OSMO_FSM_TERM_ERROR,
+				   NULL);
+		subscr->vsub->lu_fsm = NULL;
+		subscr->vsub = NULL;
+	}
+}
+
+void msc_subscr_con_cleanup(struct gsm_subscriber_connection *conn)
+{
+	if (!conn)
+		return;
+
+	if (conn->subscr) {
+		DEBUGP(DRLL, "%s Freeing subscriber connection\n",
+		       subscr_name(conn->subscr));
+		msc_subscr_cleanup(conn->subscr);
+		subscr_put(conn->subscr);
+		conn->subscr = NULL;
+	} else
+		DEBUGP(DRLL, "Freeing subscriber connection %p"
+		       " with NULL subscriber\n", conn);
+
+	if (conn->master_fsm) {
+		osmo_fsm_inst_term(conn->master_fsm, OSMO_FSM_TERM_ERROR,
+				   NULL);
+		conn->master_fsm = NULL;
+	}
+}
+
+void msc_subscr_con_free(struct gsm_subscriber_connection *conn)
+{
+	if (!conn)
+		return;
+
+	msc_subscr_con_cleanup(conn);
+
+	llist_del(&conn->entry);
+	talloc_free(conn);
+}
+
 
 /* MSC-level operations to be called by libbsc in NITB */
 static struct bsc_api msc_handler = {
@@ -147,6 +203,7 @@ static struct bsc_api msc_handler = {
 	.assign_fail = msc_assign_fail,
 	.classmark_chg = msc_classmark_chg,
 	.cipher_mode_compl = msc_ciph_m_compl,
+	.conn_cleanup = msc_subscr_con_cleanup,
 };
 
 struct bsc_api *msc_bsc_api() {

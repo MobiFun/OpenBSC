@@ -261,6 +261,8 @@ void bsc_subscr_con_free(struct gsm_subscriber_connection *conn)
 	if (!conn)
 		return;
 
+	if (conn->network->bsc_api->conn_cleanup)
+		conn->network->bsc_api->conn_cleanup(conn);
 
 	if (conn->subscr) {
 		subscr_put(conn->subscr);
