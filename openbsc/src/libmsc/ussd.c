@@ -33,6 +33,7 @@
 #include <openbsc/gsm_subscriber.h>
 #include <openbsc/debug.h>
 #include <openbsc/osmo_msc.h>
+#include <openbsc/vlr.h>
 
 /* Declarations of USSD strings to be recognised */
 const char USSD_TEXT_OWN_NUMBER[] = "*#100#";
@@ -88,7 +89,7 @@ int handle_rcv_ussd(struct gsm_subscriber_connection *conn, struct msgb *msg)
 /* A network-specific handler function */
 static int send_own_number(struct gsm_subscriber_connection *conn, const struct msgb *msg, const struct ss_request *req)
 {
-	char *own_number = conn->subscr->extension;
+	char *own_number = conn->subscr->vsub->msisdn;
 	char response_string[GSM_EXTENSION_LENGTH + 20];
 
 	/* Need trailing CR as EOT character */
