@@ -597,6 +597,8 @@ static void vlr_loc_upd_node_4(struct osmo_fsm_inst *fi)
 	struct vlr_instance *vlr = lfp->vlr;
 	bool hlr_unknown = false;
 
+	LOGPFSM(fi, "vlr_loc_upd_node4()\n");
+
 	if (hlr_unknown) {
 		/* FIXME: Delete subscriber record */
 		/* LU REJ: Roaming not allowed */
@@ -615,6 +617,9 @@ static void vlr_loc_upd_node_4(struct osmo_fsm_inst *fi)
 static void vlr_loc_upd_node_b(struct osmo_fsm_inst *fi)
 {
 	struct lu_fsm_priv *lfp = fi->priv;
+
+	LOGPFSM(fi, "vlr_loc_upd_node_b()\n");
+
 	/* FIXME */
 	if (0) { /* IMEISV or PgA to send */
 		vlr_loc_upd_node_4(fi);
@@ -634,6 +639,9 @@ static void vlr_loc_upd_post_auth(struct osmo_fsm_inst *fi)
 {
 	struct lu_fsm_priv *lfp = fi->priv;
 	struct vlr_subscriber *vsub = lfp->vsub;
+
+	LOGPFSM(fi, "vlr_loc_upd_post_auth()\n");
+
 	OSMO_ASSERT(vsub);
 
 	vsub->conf_by_radio_contact_ind = true;
@@ -655,6 +663,8 @@ static void vlr_loc_upd_node1(struct osmo_fsm_inst *fi)
 	struct lu_fsm_priv *lfp = fi->priv;
 	struct vlr_subscriber *vsub = lfp->vsub;
 
+	LOGPFSM(fi, "vlr_loc_upd_node1()\n");
+
 	OSMO_ASSERT(vsub);
 
 	if (is_auth_required(lfp)) {
@@ -674,6 +684,8 @@ static void vlr_loc_upd_node2(struct osmo_fsm_inst *fi)
 	struct lu_fsm_priv *lfp = fi->priv;
 	struct vlr_instance *vlr = lfp->vlr;
 
+	LOGPFSM(fi, "vlr_loc_upd_node2()\n");
+
 	OSMO_ASSERT(lfp->vsub);
 
 	/* Obtain_IMSI_VLR */
@@ -692,8 +704,11 @@ static int assoc_lfp_with_sub(struct osmo_fsm_inst *fi, struct vlr_subscriber *v
 		LOGPFSML(fi, LOGL_ERROR,
 			 "A Location Updating process is already pending for"
 			 " this subscriber. Aborting.\n");
-		/* FIXME what now. terminate the conn? */
+		/* Free this second LU attempt */
 		osmo_fsm_inst_term(fi, OSMO_FSM_TERM_ERROR, NULL);
+		/* Also get rid of the pending LU attempt. It's all wrong. */
+		osmo_fsm_inst_term(vsub->lu_fsm, OSMO_FSM_TERM_ERROR, NULL);
+		/* TODO anything else? terminate the conn? */
 		return -EINVAL;
 	}
 	vsub->lu_fsm = fi;
