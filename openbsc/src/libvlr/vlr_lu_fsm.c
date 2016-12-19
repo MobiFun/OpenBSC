@@ -51,12 +51,12 @@ enum upd_hlr_vlr_evt {
 };
 
 static const struct value_string upd_hlr_vlr_event_names[] = {
-	{ UPD_HLR_VLR_E_START, 			"START" },
-	{ UPD_HLR_VLR_E_INS_SUB_DATA,		"INS-SUB-DATA" },
-	{ UPD_HLR_VLR_E_ACT_TRACE_MODE,		"ACT-TRACE-MODE" },
-	{ UPD_HLR_VLR_E_FW_CHECK_SS_IND,	"FW-CHECK-SS-IND" },
-	{ UPD_HLR_VLR_E_UPD_LOC_ACK,		"UPD-LOC-ACK" },
-	{ UPD_HLR_VLR_E_UPD_LOC_NACK,		"UPD-LOC-NACK" },
+	OSMO_VALUE_STRING(UPD_HLR_VLR_E_START),
+	OSMO_VALUE_STRING(UPD_HLR_VLR_E_INS_SUB_DATA),
+	OSMO_VALUE_STRING(UPD_HLR_VLR_E_ACT_TRACE_MODE),
+	OSMO_VALUE_STRING(UPD_HLR_VLR_E_FW_CHECK_SS_IND),
+	OSMO_VALUE_STRING(UPD_HLR_VLR_E_UPD_LOC_ACK),
+	OSMO_VALUE_STRING(UPD_HLR_VLR_E_UPD_LOC_NACK),
 	{ 0, NULL }
 };
 
@@ -112,7 +112,7 @@ static const struct osmo_fsm_state upd_hlr_vlr_states[] = {
 	[UPD_HLR_VLR_S_INIT] = {
 		.in_event_mask = S(UPD_HLR_VLR_E_START),
 		.out_state_mask = S(UPD_HLR_VLR_S_WAIT_FOR_DATA),
-		.name = "INIT",
+		.name = OSMO_STRINGIFY(UPD_HLR_VLR_S_INIT),
 		.action = upd_hlr_vlr_fsm_init,
 	},
 	[UPD_HLR_VLR_S_WAIT_FOR_DATA] = {
@@ -122,16 +122,16 @@ static const struct osmo_fsm_state upd_hlr_vlr_states[] = {
 				 S(UPD_HLR_VLR_E_UPD_LOC_ACK) |
 				 S(UPD_HLR_VLR_E_UPD_LOC_NACK),
 		.out_state_mask = S(UPD_HLR_VLR_S_DONE),
-		.name = "WAIT_FOR_DATA",
+		.name = OSMO_STRINGIFY(UPD_HLR_VLR_S_WAIT_FOR_DATA),
 		.action = upd_hlr_vlr_fsm_wait_data,
 	},
 	[UPD_HLR_VLR_S_DONE] = {
-		.name = "DONE",
+		.name = OSMO_STRINGIFY(UPD_HLR_VLR_S_DONE),
 	},
 };
 
 static struct osmo_fsm upd_hlr_vlr_fsm = {
-	.name = "Update_HLR_VLR",
+	.name = "upd_hlr_vlr_fsm",
 	.states = upd_hlr_vlr_states,
 	.num_states = ARRAY_SIZE(upd_hlr_vlr_states),
 	.allstate_event_mask = 0,
@@ -176,9 +176,9 @@ enum sub_pres_vlr_event {
 };
 
 static const struct value_string sub_pres_vlr_event_names[] = {
-	{ SUB_PRES_VLR_E_START, "START" },
-	{ SUB_PRES_VLR_E_READY_SM_CNF, "READY_FOR_SM-CNF" },
-	{ SUB_PRES_VLR_E_READY_SM_ERR, "READY_FOR_SM-ERR" },
+	OSMO_VALUE_STRING(SUB_PRES_VLR_E_START),
+	OSMO_VALUE_STRING(SUB_PRES_VLR_E_READY_SM_CNF),
+	OSMO_VALUE_STRING(SUB_PRES_VLR_E_READY_SM_ERR),
 	{ 0, NULL }
 };
 
@@ -219,23 +219,23 @@ static const struct osmo_fsm_state sub_pres_vlr_states[] = {
 		.in_event_mask = S(SUB_PRES_VLR_E_START),
 		.out_state_mask = S(SUB_PRES_VLR_S_WAIT_FOR_HLR) |
 				  S(SUB_PRES_VLR_S_DONE),
-		.name = "INIT",
+		.name = OSMO_STRINGIFY(SUB_PRES_VLR_S_INIT),
 		.action = sub_pres_vlr_fsm_init,
 	},
 	[SUB_PRES_VLR_S_WAIT_FOR_HLR] = {
 		.in_event_mask = S(SUB_PRES_VLR_E_READY_SM_CNF) |
 				 S(SUB_PRES_VLR_E_READY_SM_ERR),
 		.out_state_mask = S(SUB_PRES_VLR_S_DONE),
-		.name = "WAIT_FOR_HLR",
+		.name = OSMO_STRINGIFY(SUB_PRES_VLR_S_WAIT_FOR_HLR),
 		.action = sub_pres_vlr_fsm_wait_hlr,
 	},
 	[SUB_PRES_VLR_S_DONE] = {
-		.name = "DONE",
+		.name = OSMO_STRINGIFY(SUB_PRES_VLR_S_DONE),
 	},
 };
 
 static struct osmo_fsm sub_pres_vlr_fsm = {
-	.name = "Subscriber_Present_VLR",
+	.name = "sub_pres_vlr_fsm",
 	.states = sub_pres_vlr_states,
 	.num_states = ARRAY_SIZE(sub_pres_vlr_states),
 	.allstate_event_mask = 0,
@@ -283,11 +283,11 @@ enum lu_compl_vlr_event {
 };
 
 static const struct value_string lu_compl_vlr_event_names[] = {
-	{ LU_COMPL_VLR_E_START, 	  "START" },
-	{ LU_COMPL_VLR_E_SUB_PRES_COMPL,  "SUBSCR-PRES-COMPL" },
-	{ LU_COMPL_VLR_E_IMEI_CHECK_ACK,  "IMEI-CHECK-ACK" },
-	{ LU_COMPL_VLR_E_IMEI_CHECK_NACK, "IMEI-CHECK-NACK" },
-	{ LU_COMPL_VLR_E_NEW_TMSI_ACK,	  "NEW-TMSI-ACK" },
+	OSMO_VALUE_STRING(LU_COMPL_VLR_E_START),
+	OSMO_VALUE_STRING(LU_COMPL_VLR_E_SUB_PRES_COMPL),
+	OSMO_VALUE_STRING(LU_COMPL_VLR_E_IMEI_CHECK_ACK),
+	OSMO_VALUE_STRING(LU_COMPL_VLR_E_IMEI_CHECK_NACK),
+	OSMO_VALUE_STRING(LU_COMPL_VLR_E_NEW_TMSI_ACK),
 	{ 0, NULL }
 };
 
@@ -434,7 +434,7 @@ static const struct osmo_fsm_state lu_compl_vlr_states[] = {
 		.out_state_mask = S(LU_COMPL_VLR_S_DONE) |
 				  S(LU_COMPL_VLR_S_WAIT_SUB_PRES) |
 				  S(LU_COMPL_VLR_S_WAIT_IMEI),
-		.name = "INIT",
+		.name = OSMO_STRINGIFY(LU_COMPL_VLR_S_INIT),
 		.action = lu_compl_vlr_init,
 	},
 	[LU_COMPL_VLR_S_WAIT_SUB_PRES] = {
@@ -443,14 +443,14 @@ static const struct osmo_fsm_state lu_compl_vlr_states[] = {
 				  S(LU_COMPL_VLR_S_WAIT_IMEI_TMSI) |
 				  S(LU_COMPL_VLR_S_WAIT_TMSI_CNF) |
 				  S(LU_COMPL_VLR_S_DONE),
-		.name = "WAIT-SUBSCR-PRES-COMPL",
+		.name = OSMO_STRINGIFY(LU_COMPL_VLR_S_WAIT_SUB_PRES),
 		.action = lu_compl_vlr_wait_subscr_pres,
 	},
 	[LU_COMPL_VLR_S_WAIT_IMEI] = {
 		.in_event_mask = S(LU_COMPL_VLR_E_IMEI_CHECK_ACK) |
 				 S(LU_COMPL_VLR_E_IMEI_CHECK_NACK),
 		.out_state_mask = S(LU_COMPL_VLR_S_DONE),
-		.name = "WAIT-CHECK-IMEI",
+		.name = OSMO_STRINGIFY(LU_COMPL_VLR_S_WAIT_IMEI),
 		.action = lu_compl_vlr_wait_imei,
 	},
 	[LU_COMPL_VLR_S_WAIT_IMEI_TMSI] = {
@@ -458,22 +458,22 @@ static const struct osmo_fsm_state lu_compl_vlr_states[] = {
 				 S(LU_COMPL_VLR_E_IMEI_CHECK_NACK),
 		.out_state_mask = S(LU_COMPL_VLR_S_DONE) |
 				  S(LU_COMPL_VLR_S_WAIT_TMSI_CNF),
-		.name = "WAIT-CHECK-IMEI(TMSI)",
+		.name = OSMO_STRINGIFY(LU_COMPL_VLR_S_WAIT_IMEI_TMSI),
 		.action = lu_compl_vlr_wait_imei,
 	},
 	[LU_COMPL_VLR_S_WAIT_TMSI_CNF] = {
 		.in_event_mask = S(LU_COMPL_VLR_E_NEW_TMSI_ACK),
 		.out_state_mask = S(LU_COMPL_VLR_S_DONE),
-		.name = "WAIT-TMSI-CONF",
+		.name = OSMO_STRINGIFY(LU_COMPL_VLR_S_WAIT_TMSI_CNF),
 		.action = lu_compl_vlr_wait_tmsi,
 	},
 	[LU_COMPL_VLR_S_DONE] = {
-		.name = "DONE",
+		.name = OSMO_STRINGIFY(LU_COMPL_VLR_S_DONE),
 	},
 };
 
 static struct osmo_fsm lu_compl_vlr_fsm = {
-	.name = "Location_Update_Completion_VLR",
+	.name = "lu_compl_vlr_fsm",
 	.states = lu_compl_vlr_states,
 	.num_states = ARRAY_SIZE(lu_compl_vlr_states),
 	.allstate_event_mask = 0,
@@ -524,17 +524,17 @@ enum vlr_lu_state {
 };
 
 static const struct value_string fsm_lu_event_names[] = {
-	{ VLR_ULA_E_UPDATE_LA,		"UPDATE-LOCATION" },
-	{ VLR_ULA_E_SEND_ID_ACK,	"PVLR-SEND-ID-ACK" },
-	{ VLR_ULA_E_SEND_ID_NACK,	"PVLR-SEND-ID-NACK" },
-	{ VLR_ULA_E_AUTH_RES,		"AUTH-RES" },
-	{ VLR_ULA_E_ID_IMSI,		"MS-ID-IMSI" },
-	{ VLR_ULA_E_ID_IMEI,		"MS-ID-IMEI" },
-	{ VLR_ULA_E_ID_IMEISV,		"MS-ID-IMEISV" },
-	{ VLR_ULA_E_HLR_LU_RES,		"HLR-LU-RES" },
-	{ VLR_ULA_E_UPD_HLR_COMPL,	"UPD-HLR-VLR-COMPL-RES" },
-	{ VLR_ULA_E_LU_COMPL_TERM,	"LU-COMPL-VLR-RES" },
-	{ VLR_ULA_E_NEW_TMSI_ACK,	"NEW-TMSI-ACK" },
+	OSMO_VALUE_STRING(VLR_ULA_E_UPDATE_LA),
+	OSMO_VALUE_STRING(VLR_ULA_E_SEND_ID_ACK),
+	OSMO_VALUE_STRING(VLR_ULA_E_SEND_ID_NACK),
+	OSMO_VALUE_STRING(VLR_ULA_E_AUTH_RES),
+	OSMO_VALUE_STRING(VLR_ULA_E_ID_IMSI),
+	OSMO_VALUE_STRING(VLR_ULA_E_ID_IMEI),
+	OSMO_VALUE_STRING(VLR_ULA_E_ID_IMEISV),
+	OSMO_VALUE_STRING(VLR_ULA_E_HLR_LU_RES),
+	OSMO_VALUE_STRING(VLR_ULA_E_UPD_HLR_COMPL),
+	OSMO_VALUE_STRING(VLR_ULA_E_LU_COMPL_TERM),
+	OSMO_VALUE_STRING(VLR_ULA_E_NEW_TMSI_ACK),
 	{ 0, NULL }
 };
 
@@ -997,8 +997,9 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 				  S(VLR_ULA_S_WAIT_PVLR) |
 				  S(VLR_ULA_S_WAIT_IMSI) |
 				  S(VLR_ULA_S_WAIT_AUTH) |
+				  S(VLR_ULA_S_WAIT_HLR_UPD) |
 				  S(VLR_ULA_S_DONE),
-		.name = "IDLE",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_IDLE),
 		.action = lu_fsm_idle,
 	},
 	[VLR_ULA_S_WAIT_IMEISV] = {
@@ -1006,7 +1007,7 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 		.out_state_mask = S(VLR_ULA_S_WAIT_PVLR) |
 				  S(VLR_ULA_S_WAIT_IMSI) |
 				  S(VLR_ULA_S_DONE),
-		.name = "WAIT-ID-IMEISV",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_IMEISV),
 		.action = lu_fsm_wait_imeisv,
 	},
 	[VLR_ULA_S_WAIT_PVLR] = {
@@ -1015,7 +1016,7 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 		.out_state_mask = S(VLR_ULA_S_WAIT_IMSI) |
 				  S(VLR_ULA_S_WAIT_AUTH) |
 				  S(VLR_ULA_S_DONE),
-		.name = "WAIT-PVLR-RESP",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_PVLR),
 		.action = lu_fsm_wait_pvlr,
 	},
 	[VLR_ULA_S_WAIT_AUTH] = {
@@ -1023,7 +1024,7 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 		.out_state_mask = S(VLR_ULA_S_WAIT_LU_COMPL) |
 				  S(VLR_ULA_S_WAIT_HLR_UPD) |
 				  S(VLR_ULA_S_DONE),
-		.name = "WAIT-AUTH-COMPL",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_AUTH),
 		.action = lu_fsm_wait_auth,
 	},
 	[VLR_ULA_S_WAIT_IMSI] = {
@@ -1031,7 +1032,7 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 		.out_state_mask = S(VLR_ULA_S_WAIT_AUTH) |
 				  S(VLR_ULA_S_WAIT_HLR_UPD) |
 				  S(VLR_ULA_S_DONE),
-		.name = "WAIT-ID-IMSI",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_IMSI),
 		.action = lu_fsm_wait_imsi,
 	},
 	[VLR_ULA_S_WAIT_HLR_UPD] = {
@@ -1040,25 +1041,25 @@ static const struct osmo_fsm_state vlr_lu_fsm_states[] = {
 		.out_state_mask = S(VLR_ULA_S_WAIT_LU_COMPL) |
 				  S(VLR_ULA_S_WAIT_LU_COMPL_STANDALONE) |
 				  S(VLR_ULA_S_DONE),
-		.name = "WAIT-HLR-LU-COMPL",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_HLR_UPD),
 		.action = lu_fsm_wait_hlr_ul_res,
 	},
 	[VLR_ULA_S_WAIT_LU_COMPL] = {
 		.in_event_mask = S(VLR_ULA_E_LU_COMPL_TERM) |
 				 S(VLR_ULA_E_NEW_TMSI_ACK),
 		.out_state_mask = S(VLR_ULA_S_DONE),
-		.name = "WAIT-LU-COMPL",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_LU_COMPL),
 		.action = lu_fsm_wait_lu_compl,
 	},
 	[VLR_ULA_S_WAIT_LU_COMPL_STANDALONE] = {
 		.in_event_mask = S(VLR_ULA_E_LU_COMPL_TERM) |
 				 S(VLR_ULA_E_NEW_TMSI_ACK),
 		.out_state_mask = S(VLR_ULA_S_DONE),
-		.name = "WAIT-LU-COMPL(STANDALONE)",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_WAIT_LU_COMPL_STANDALONE),
 		.action = lu_fsm_wait_lu_compl_standalone,
 	},
 	[VLR_ULA_S_DONE] = {
-		.name = "DONE",
+		.name = OSMO_STRINGIFY(VLR_ULA_S_DONE),
 	},
 };
 
@@ -1074,7 +1075,7 @@ static void fsm_lu_cleanup(struct osmo_fsm_inst *fi, enum osmo_fsm_term_cause ca
 }
 
 static struct osmo_fsm vlr_lu_fsm = {
-	.name = "Update_Location_Area_VLR",
+	.name = "vlr_lu_fsm",
 	.states = vlr_lu_fsm_states,
 	.num_states = ARRAY_SIZE(vlr_lu_fsm_states),
 	.allstate_event_mask = 0,
