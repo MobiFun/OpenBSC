@@ -429,7 +429,11 @@ static void vlr_sub_gsup_insert_data(struct vlr_subscriber *vsub,
 		decode_bcd_number_safe(vsub->msisdn, sizeof(vsub->msisdn),
 				       gsup_msg->msisdn_enc,
 				       gsup_msg->msisdn_enc_len, 0);
-	}
+		LOGP(DVLR, LOGL_DEBUG, "%s has MSISDN %s\n",
+		     vlr_sub_name(vsub), vsub->msisdn);
+	} else
+		LOGP(DVLR, LOGL_DEBUG, "%s: no MSISDN data received (is '%s')\n",
+		     vlr_sub_name(vsub), vsub->msisdn);
 
 	if (gsup_msg->hlr_enc) {
 		if (gsup_msg->hlr_enc_len > sizeof(vsub->hlr.buf)) {
