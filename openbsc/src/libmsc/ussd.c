@@ -92,6 +92,9 @@ static int send_own_number(struct gsm_subscriber_connection *conn, const struct 
 	char *own_number = conn->subscr->vsub->msisdn;
 	char response_string[GSM_EXTENSION_LENGTH + 20];
 
+	DEBUGP(DMM, "%s: MSISDN = %s\n", subscr_name(conn->subscr),
+	       own_number);
+
 	/* Need trailing CR as EOT character */
 	snprintf(response_string, sizeof(response_string), "Your extension is %s\r", own_number);
 	return gsm0480_send_ussd_response(conn, msg, response_string, req);
