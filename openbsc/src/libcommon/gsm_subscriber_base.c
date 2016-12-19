@@ -103,7 +103,8 @@ struct gsm_subscriber *subscr_put(struct gsm_subscriber *subscr)
 {
 	subscr->use_count--;
 	DEBUGP(DREF, "subscr %s usage decreases to: %d\n",
-			subscr->extension, subscr->use_count);
+	       subscr->vsub? subscr->vsub->msisdn : subscr->extension,
+	       subscr->use_count);
 	if (subscr->use_count <= 0 &&
 	    !((subscr->group && subscr->group->keep_subscr) ||
 	      subscr->keep_in_ram))
