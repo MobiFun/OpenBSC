@@ -404,6 +404,21 @@ static int vlr_sub_handle_sai_res(struct vlr_subscriber *vsub,
 	return 0;
 }
 
+static int decode_bcd_number_safe(char *output, int output_len,
+				  const uint8_t *bcd_lv, int input_len,
+				  int h_len)
+{
+	uint8_t len;
+	OSMO_ASSERT(output_len >= 1);
+	*output = '\0';
+	if (input_len < 1)
+		return -EIO;
+	len = bcd_lv[0];
+	if (input_len < len)
+		return -EIO;
+	return gsm48_decode_bcd_number(output, output_len, bcd_lv, h_len);
+}
+
 static void vlr_sub_gsup_insert_data(struct vlr_subscriber *vsub,
 				     const struct osmo_gsup_message *gsup_msg)
 {
@@ -411,9 +426,9 @@ static void vlr_sub_gsup_insert_data(struct vlr_subscriber *vsub,
 	int rc;
 
 	if (gsup_msg->msisdn_enc) {
-		gsm48_mi_to_string(vsub->msisdn, sizeof(vsub->msisdn),
-				   gsup_msg->msisdn_enc,
-				   gsup_msg->msisdn_enc_len);
+		decode_bcd_number_safe(vsub->msisdn, sizeof(vsub->msisdn),
+				       gsup_msg->msisdn_enc,
+				       gsup_msg->msisdn_enc_len, 0);
 	}
 
 	if (gsup_msg->hlr_enc) {
