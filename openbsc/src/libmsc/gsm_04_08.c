@@ -867,8 +867,11 @@ static int gsm48_rx_mm_serv_req(struct gsm_subscriber_connection *conn, struct m
 	conn->expire_timer_stopped = 1;
 #endif
 
+#if 0
 	return gsm48_secure_channel(conn, req->cipher_key_seq,
 			_gsm48_rx_mm_serv_req_sec_cb, NULL);
+#endif
+	return 0;
 }
 
 static int gsm48_rx_mm_imsi_detach_ind(struct gsm_subscriber_connection *conn, struct msgb *msg)
