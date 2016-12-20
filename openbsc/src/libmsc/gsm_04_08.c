@@ -856,6 +856,10 @@ static int gsm48_rx_mm_serv_req(struct gsm_subscriber_connection *conn, struct m
 	if (is_siemens_bts(conn->bts))
 		send_siemens_mrpci(msg->lchan, classmark2-1);
 
+	/* HACK early CM Service Acccept to test whether MS attempt to request
+	 * service is thwarted. */
+	gsm48_tx_mm_serv_ack(conn);
+
 #if 0
 	osmo_signal_dispatch(SS_SUBSCR, S_SUBSCR_IDENTITY, (classmark2 + classmark2_len));
 
