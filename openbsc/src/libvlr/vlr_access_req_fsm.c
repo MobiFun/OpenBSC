@@ -115,6 +115,8 @@ static void _proc_arq_vlr_post_imei(struct osmo_fsm_inst *fi)
 	struct proc_arq_priv *par = fi->priv;
 	struct vlr_subscriber *vsub = par->vsub;
 
+	LOGPFSM(fi, "_proc_arq_vlr_post_imei()\n");
+
 	/* TODO: Identity := IMSI */
 	/* FIXME: send process acess response already now?!? */
 	if (1 /* ciphering required */) {
@@ -136,6 +138,8 @@ static void _proc_arq_vlr_post_trace(struct osmo_fsm_inst *fi)
 	struct proc_arq_priv *par = fi->priv;
 	struct vlr_subscriber *vsub = par->vsub;
 	struct vlr_instance *vlr = vsub->vlr;
+
+	LOGPFSM(fi, "_proc_arq_vlr_post_trace()\n");
 
 	if (1 /* ciphering required */) {
 		vlr->ops.set_ciph_mode(par->msc_conn_ref);
@@ -161,6 +165,7 @@ static void _proc_arq_vlr_post_trace(struct osmo_fsm_inst *fi)
 /* After Subscriber_Present_VLR */
 static void _proc_arq_vlr_post_pres(struct osmo_fsm_inst *fi)
 {
+	LOGPFSM(fi, "_proc_arq_vlr_post_pres()\n");
 	if (0 /* TODO: tracing required */) {
 		/* TODO: Trace_Subscriber_Activity_VLR */
 		osmo_fsm_inst_state_chg(fi, PR_ARQ_S_WAIT_TRACE_SUB, 0, 0);
@@ -173,6 +178,8 @@ static void _proc_arq_vlr_node2_post_vlr(struct osmo_fsm_inst *fi)
 {
 	struct proc_arq_priv *par = fi->priv;
 	struct vlr_subscriber *vsub = par->vsub;
+
+	LOGPFSM(fi, "_proc_arq_vlr_node2_post_vlr()\n");
 
 	if (!vsub->sub_dataconf_by_hlr_ind) {
 		/* Set User Error: Unidentified Subscriber */
@@ -199,6 +206,8 @@ static void _proc_arq_vlr_node2(struct osmo_fsm_inst *fi)
 {
 	struct proc_arq_priv *par = fi->priv;
 	struct vlr_subscriber *vsub = par->vsub;
+
+	LOGPFSM(fi, "_proc_arq_vlr_node2()\n");
 
 	vsub->conf_by_radio_contact_ind = true;
 	if (vsub->loc_conf_in_hlr_ind == false) {
