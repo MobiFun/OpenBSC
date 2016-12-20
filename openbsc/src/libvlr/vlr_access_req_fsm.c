@@ -34,6 +34,17 @@
  * Process_Access_Request_VLR, TS 29.002 Chapter 25.4.2
  ***********************************************************************/
 
+const struct value_string vlr_proc_arq_result_names[] = {
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_SYSTEM_FAILURE),
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_ILLEGAL_SUBSCR),
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_UNIDENT_SUBSCR),
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_ROAMING_NOTALLOWED),
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_ILLEGAL_EQUIP),
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_UNKNOWN_ERROR),
+	OSMO_VALUE_STRING(VLR_PR_ARQ_RES_PASSED),
+	{0, NULL}
+};
+
 enum proc_arq_vlr_state {
 	PR_ARQ_S_INIT,
 	/* Waiting for Obtain_Identity_VLR (IMSI) result */
@@ -93,6 +104,8 @@ static void proc_arq_fsm_done(struct osmo_fsm_inst *fi,
 			      enum osmo_fsm_term_cause cause,
 			      enum vlr_proc_arq_result res)
 {
+	LOGPFSM(fi, "Process Access Request result: %s\n",
+		vlr_proc_arq_result_name(res));
 	osmo_fsm_inst_state_chg(fi, PR_ARQ_S_DONE, 0, 0);
 	osmo_fsm_inst_term(fi, cause, &res);
 }

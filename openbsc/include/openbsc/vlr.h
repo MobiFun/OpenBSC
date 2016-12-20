@@ -258,6 +258,12 @@ enum vlr_proc_arq_result {
 	VLR_PR_ARQ_RES_PASSED,
 };
 
+extern const struct value_string vlr_proc_arq_result_names[];
+static inline const char *vlr_proc_arq_result_name(enum vlr_proc_arq_result res)
+{
+	return get_value_string(vlr_proc_arq_result_names, res);
+}
+
 enum proc_arq_vlr_event {
 	PR_ARQ_E_START,
 	PR_ARQ_E_ID_IMSI,
