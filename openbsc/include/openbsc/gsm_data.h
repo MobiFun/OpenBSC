@@ -139,6 +139,8 @@ struct gsm_subscriber_connection {
 	struct gsm_lchan *secondary_lchan; /* BSC */
 
 	struct gsm48_classmark1 classmark1;
+
+	bool authenticated;
 };
 
 

@@ -683,3 +683,6 @@ int main(int argc, char **argv)
 
 	exit(0);
 }
+
+struct gsm_subscriber_connection;
+int gsm48_tx_mm_serv_ack(struct gsm_subscriber_connection *conn) { return 0; }

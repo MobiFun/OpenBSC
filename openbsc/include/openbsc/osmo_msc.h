@@ -16,7 +16,8 @@ enum subscr_conn_fsm_event {
 	/* LU FSM has terminated */
 	SUB_CON_E_LU_RES,
 	/* Process Access Request has terminated */
-	SUB_CON_E_PARQ_RES,
+	SUB_CON_E_PARQ_SUCCESS,
+	SUB_CON_E_PARQ_FAILURE,
 	/* MS/BTS/BSC originated close request */
 	SUB_CON_E_MO_CLOSE,
 	/* MSC originated close request, primarily originates from

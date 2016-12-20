@@ -760,6 +760,7 @@ static int _gsm48_rx_mm_serv_req_sec_cb(
 
 		case GSM_SECURITY_NOAVAIL:
 		case GSM_SECURITY_ALREADY:
+			DEBUGP(DMM, "_gsm48_rx_mm_serv_req_sec_cb() sending CM Service Accept\n");
 			rc = gsm48_tx_mm_serv_ack(conn);
 			implit_attach(conn);
 			break;
@@ -843,8 +844,8 @@ static int gsm48_rx_mm_serv_req(struct gsm_subscriber_connection *conn, struct m
 		return rc;
 
 	proc_arq_fsm = vlr_proc_acc_req(conn->master_fsm,
-					SUB_CON_E_PARQ_RES, g_vlr,
-					conn, VLR_PR_ARQ_T_CM_SERV_REQ,
+					SUB_CON_E_PARQ_SUCCESS, SUB_CON_E_PARQ_FAILURE,
+					g_vlr, conn, VLR_PR_ARQ_T_CM_SERV_REQ,
 					mi-1, &lai,
 					conn->network->authentication_required);
 	if (!proc_arq_fsm)
@@ -1057,8 +1058,8 @@ static int gsm48_rx_rr_pag_resp(struct gsm_subscriber_connection *conn, struct m
 	}
 
 	proc_arq_fsm = vlr_proc_acc_req(conn->master_fsm,
-					SUB_CON_E_PARQ_RES, g_vlr,
-					conn, VLR_PR_ARQ_T_PAGING_RESP,
+					SUB_CON_E_PARQ_SUCCESS, SUB_CON_E_PARQ_FAILURE,
+					g_vlr, conn, VLR_PR_ARQ_T_PAGING_RESP,
 					mi_lv, &lai,
 					conn->network->authentication_required);
 	if (!proc_arq_fsm) {
@@ -3660,39 +3661,80 @@ static void msc_vlr_subscr_assoc(void *msc_conn_ref,
 }
 
 enum subscr_conn_fsm_state {
-	SUBSCR_CONN_S_ACTIVE,
-	SUBSCR_CONN_S_DONE
+	SUBSCR_CONN_S_NEW,
+	SUBSCR_CONN_S_ACCEPTED,
+	SUBSCR_CONN_S_REJECTED,
+	SUBSCR_CONN_S_RELEASING,
+	SUBSCR_CONN_S_RELEASED,
 };
 
 static const struct value_string subscr_conn_fsm_event_names[] = {
 	{ SUB_CON_E_LU_RES, "LU-FSM-DONE" },
-	{ SUB_CON_E_PARQ_RES, "PROC-ARQ-DONE" },
+	OSMO_VALUE_STRING(SUB_CON_E_PARQ_SUCCESS),
+	OSMO_VALUE_STRING(SUB_CON_E_PARQ_FAILURE),
 	{ SUB_CON_E_MO_CLOSE, "MO-CLOSE-REQUEST" },
 	{ SUB_CON_E_CN_CLOSE, "CN-CLOSE-REQUEST" },
 	{ SUB_CON_E_CLOSE_CONF, "CLOSE-CONF" },
 	{ 0, NULL }
 };
 
-void subscr_conn_fsm_active(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+void subscr_conn_fsm_new(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+{
+	int rc;
+	struct gsm_subscriber_connection *conn = fi->priv;
+	switch (event) {
+	case SUB_CON_E_PARQ_SUCCESS:
+		osmo_fsm_inst_state_chg(fi, SUBSCR_CONN_S_ACCEPTED, 0, 0);
+		rc = gsm48_tx_mm_serv_ack(conn);
+		if (rc)
+			LOGPFSML(fi, LOGL_ERROR,
+				 "Failed to send CM Service Accept\n");
+		break;
+	default:
+		LOGPFSM(fi, "Unhandled event: %s\n",
+			osmo_fsm_event_name(fi->fsm, event));
+		break;
+	}
+}
+
+void subscr_conn_fsm_accepted(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+{
+}
+
+void subscr_conn_fsm_releasing(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 }
 
 #define S(x)	(1 << (x))
 
 static const struct osmo_fsm_state subscr_conn_fsm_states[] = {
-	[SUBSCR_CONN_S_ACTIVE] = {
+	[SUBSCR_CONN_S_NEW] = {
+		.name = OSMO_STRINGIFY(SUBSCR_CONN_S_NEW),
 		.in_event_mask = S(SUB_CON_E_LU_RES) |
-				 S(SUB_CON_E_PARQ_RES) |
+				 S(SUB_CON_E_PARQ_SUCCESS) |
+				 S(SUB_CON_E_PARQ_FAILURE) |
 				 S(SUB_CON_E_MO_CLOSE) |
 				 S(SUB_CON_E_CN_CLOSE) |
 				 S(SUB_CON_E_CLOSE_CONF),
-		.out_state_mask = S(SUBSCR_CONN_S_ACTIVE) |
-				  S(SUBSCR_CONN_S_DONE),
-		.name = "ACTIVE",
-		.action = subscr_conn_fsm_active,
+		.out_state_mask = S(SUBSCR_CONN_S_ACCEPTED) |
+				  S(SUBSCR_CONN_S_RELEASING),
+		.action = subscr_conn_fsm_new,
 	},
-	[SUBSCR_CONN_S_DONE] = {
-		.name = "DONE",
+	[SUBSCR_CONN_S_ACCEPTED] = {
+		.name = OSMO_STRINGIFY(SUBSCR_CONN_S_ACCEPTED),
+		.in_event_mask = S(SUB_CON_E_MO_CLOSE) |
+				 S(SUB_CON_E_CN_CLOSE) |
+				 S(SUB_CON_E_CLOSE_CONF),
+		.out_state_mask = S(SUBSCR_CONN_S_RELEASING),
+		.action = subscr_conn_fsm_accepted,
+	},
+	[SUBSCR_CONN_S_RELEASING] = {
+		.name = OSMO_STRINGIFY(SUBSCR_CONN_S_RELEASING),
+		.out_state_mask = S(SUBSCR_CONN_S_RELEASED),
+		.action = subscr_conn_fsm_releasing,
+	},
+	[SUBSCR_CONN_S_RELEASED] = {
+		.name = OSMO_STRINGIFY(SUBSCR_CONN_S_RELEASED),
 	},
 };
 
@@ -3752,4 +3794,9 @@ int msc_vlr_init(void *ctx,
 static __attribute__((constructor)) void on_dso_load_0408(void)
 {
 	osmo_signal_register_handler(SS_ABISIP, handle_abisip_signal, NULL);
+}
+
+bool is_subscr_conn_authorized(struct gsm_subscriber_connection *conn)
+{
+
 }
