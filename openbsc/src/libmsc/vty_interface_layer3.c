@@ -167,7 +167,7 @@ static int _send_sms_str(struct gsm_subscriber *receiver,
 {
 	struct gsm_sms *sms;
 
-	sms = sms_from_text(receiver, sender, 0, str);
+	sms = sms_from_text(receiver, sender, 8, str);///DCS_UCS2
 	sms->protocol_id = tp_pid;
 
 	/* store in database for the queue */

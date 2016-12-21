@@ -102,12 +102,13 @@ struct gsm_sms *sms_from_text(struct gsm_subscriber *receiver,
 	sms->data_coding_scheme = dcs;
 	strncpy(sms->dst.addr, receiver->extension, sizeof(sms->dst.addr)-1);
 	/* Generate user_data */
-	sms->user_data_len = gsm_7bit_encode_n(sms->user_data, sizeof(sms->user_data),
-						sms->text, NULL);
+	//sms->user_data_len = gsm_7bit_encode_n(sms->user_data, sizeof(sms->user_data),
+	//					sms->text, NULL);
+	sms->user_data_len = gsm_ucs2_encode_n(sms->user_data, sizeof(sms->user_data),
+						sms->text, strlen(sms->text));
 
 	return sms;
 }
-
 
 static void send_signal(int sig_no,
 			struct gsm_trans *trans,
